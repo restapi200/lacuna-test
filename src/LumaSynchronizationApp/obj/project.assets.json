@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
+      "projectUniqueName": "/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
       "projectName": "LumaSynchronizationApp",
-      "projectPath": "/Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
+      "projectPath": "/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
       "packagesPath": "/Users/miguel/.nuget/packages/",
-      "outputPath": "/Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/obj/",
+      "outputPath": "/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/miguel/.nuget/NuGet/NuGet.Config"

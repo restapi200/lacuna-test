@@ -12,3 +12,17 @@
 /Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.pdb
 /Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.genruntimeconfig.cache
 /Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/obj/Debug/net7.0/ref/LumaSynchronizationApp.dll
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/bin/Debug/net7.0/LumaSynchronizationApp
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/bin/Debug/net7.0/LumaSynchronizationApp.deps.json
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/bin/Debug/net7.0/LumaSynchronizationApp.runtimeconfig.json
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/bin/Debug/net7.0/LumaSynchronizationApp.dll
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/bin/Debug/net7.0/LumaSynchronizationApp.pdb
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.GeneratedMSBuildEditorConfig.editorconfig
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.AssemblyInfoInputs.cache
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.AssemblyInfo.cs
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.csproj.CoreCompileInputs.cache
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.dll
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/refint/LumaSynchronizationApp.dll
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.pdb
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/LumaSynchronizationApp.genruntimeconfig.cache
+/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/obj/Debug/net7.0/ref/LumaSynchronizationApp.dll

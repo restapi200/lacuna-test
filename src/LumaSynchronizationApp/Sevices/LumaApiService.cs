@@ -14,11 +14,15 @@ namespace LumaSynchronizationApp.Services
     public class LumaApiService
     {
         private readonly HttpClient _httpClient;
+
+        public ListSyncAPI ListSync;
+        public ProbeResponse probeResponse;
         private string _accessToken;
         private TimeSpan _offset = TimeSpan.Zero;
         public bool _isClockSynchronized = false;
         public LumaApiService(string baseAddress)
         {
+            ListSync = new ListSyncAPI();
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(baseAddress)
@@ -71,8 +75,10 @@ namespace LumaSynchronizationApp.Services
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
                 var responseObject = JsonSerializer.Deserialize<ProbeResponse>(responseBody);
-
-                return responseObject;
+                if (responseObject.code == "Success"){
+                    this.probeResponse = responseObject;
+                    return responseObject;
+                }
             }
 
             return null;
@@ -98,11 +104,39 @@ namespace LumaSynchronizationApp.Services
                     DateTimeOffset serverBeforeResponse = probe.Decode(syncApiResponse.t1);
                     DateTimeOffset clientAfterResponse = probe.Decode(syncApiResponse.t2);
 
+                    
                     TimeSpan offset = CalculateTimeOffset(clientBeforeRequest, serverAfterRequest, serverBeforeResponse, clientAfterResponse);
                     TimeSpan roundTripDelay = CalculateRoundTripDelay(clientBeforeRequest, serverAfterRequest, serverBeforeResponse, clientAfterResponse);
+                    //Console.WriteLine($"t1: {clientBeforeRequest}");
+                    //Console.WriteLine($"t0: {serverAfterRequest}");
+                    Console.WriteLine($"encode t2: {syncApiResponse.t1}");
+                    Console.WriteLine($"encode t3: {syncApiResponse.t2}");
+                    Console.WriteLine($"t2: {serverBeforeResponse}");
+                    Console.WriteLine($"t3: {clientAfterResponse}");
+                    Console.WriteLine($"id: {probe.id}");
+                    Console.WriteLine($"encode at: {probe.encoding}");
+                    //Console.WriteLine($"_offset_after: {_offset}");
+                    //Console.WriteLine($"RoundTripDelay: {roundTripDelay}"); 
 
                     // Add the calculated offset to the previous offset
                     _offset += offset;
+                    var probeSync = new ProbeSync(
+                    
+                        probe.id,
+                        syncApiResponse.t1,
+                        syncApiResponse.t2,                       
+                        clientBeforeRequest,
+                        serverAfterRequest,
+                        serverBeforeResponse,
+                        clientAfterResponse,
+                        offset,
+                        roundTripDelay,
+                        probe.name
+
+);
+                    Console.WriteLine($"_offset_before: {_offset}");
+
+                    ListSync.ProbeSyncList.Add(probeSync);
 
                     if (Math.Abs(_offset.TotalMilliseconds) < 5) // Check if offset is less than 5ms
                     {
@@ -114,26 +148,58 @@ namespace LumaSynchronizationApp.Services
 
             return null;
         }
-        public async Task<bool> SyncProbesAsync()
+
+        public async Task<JobsResponse> JobsTake()
         {
-            ProbeResponse probeResponse = await ListProbesAsync();
-
-            if (probeResponse == null || probeResponse.probes == null || probeResponse.probes.Count == 0)
+            var response = await _httpClient.PostAsync("/api/job/take", null);
+            
+            if (response.IsSuccessStatusCode)
             {
-                return false;
-            }
-
-            foreach (Probe probe in probeResponse.probes)
-            {
-                SyncAPI syncResult = await SyncProbeAsync(probe);
-                Console.WriteLine(syncResult);
-                if (syncResult.code == "Success")
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseBody);
+                var jsonresponse = JsonSerializer.Deserialize<JobsResponse>(responseBody);
+                
+                if (jsonresponse.code == "Success")
                 {
-                    return false; // Return false if any synchronization fails
+                    return jsonresponse;
                 }
             }
+            
+            return null;
+        }
+        public async Task<BaseResponse> PerformJobCheckAsync(string jobId, string probeNow, int roundTrip)
+        {
 
-            return true; // Return true if all synchronizations succeed
+            
+            var checkRequest = new JobCheckRequest(probeNow, roundTrip);
+
+            var checkRequestJson = JsonSerializer.Serialize(checkRequest);
+            var content = new StringContent(checkRequestJson, Encoding.UTF8, "application/json");
+            
+            SetAuthorizationHeader();
+
+            var checkResponse = await _httpClient.PostAsync($"/api/job/{jobId}/check", content);
+            //Console.WriteLine($"Request URI: {checkResponse.RequestMessage.RequestUri}");
+            //Console.WriteLine($"Request Method: {checkResponse.RequestMessage.Method}");
+            //Console.WriteLine($"Request Headers: {checkResponse.RequestMessage.Headers}");
+            //Console.WriteLine($"Response Status Code: {checkResponse.StatusCode}");
+            //Console.WriteLine($"Response Headers: {checkResponse.Headers}");     
+            //Console.Out.Flush();
+        Console.WriteLine(checkResponse.IsSuccessStatusCode);
+        Console.Out.Flush();
+        if (checkResponse.IsSuccessStatusCode)
+        {
+            var responseBody = await checkResponse.Content.ReadAsStringAsync();
+            var checkApiResponse = JsonSerializer.Deserialize<BaseResponse>(responseBody);
+            return checkApiResponse;
+        }
+        else
+        {
+            // Algo deu errado ao fazer a verificação do trabalho
+            Console.WriteLine($"Request failed with status code: {checkResponse.StatusCode}");
+            Console.WriteLine($"Response content: {await checkResponse.Content.ReadAsStringAsync()}");
+            return new BaseResponse("Error", "Job check failed", $"{checkResponse}");
+        }
         }
         public TimeSpan CalculateTimeOffset(DateTimeOffset clientBeforeRequest, DateTimeOffset serverAfterRequest, DateTimeOffset serverBeforeResponse, DateTimeOffset clientAfterResponse)
         {

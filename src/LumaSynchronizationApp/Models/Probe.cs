@@ -44,29 +44,57 @@ namespace LumaSynchronizationApp.Models
             }
         }
 
-       public string EncodeTimestamp()
+        public string EncodeTimestamp(TimeSpan timeSpan)
         {
-            DateTimeOffset dateTime = DateTimeOffset.UtcNow;
-
+            long ticksValue = timeSpan.Ticks;
+            byte[] ticksBinaryBytes = BitConverter.GetBytes(ticksValue);
             switch (encoding)
             {
                 case "Iso8601":
-                    return dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+                    string formattedTimeSpan = timeSpan.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+                    string offset = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).ToString(@"hh\:mm"); // Obtém o deslocamento de fuso horário local
+
+                    return formattedTimeSpan + offset;
                 case "Ticks":
-                    long ticksValue = dateTime.ToFileTime();
-                    return ticksValue.ToString();
+                    string base64EncodedValue = Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None); // Codifica em base64
+                    return timeSpan.Ticks.ToString();
                 case "TicksBinary":
+                    return Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None).ToString();
                 case "TicksBinaryBigEndian":
-                    long ticksValueBinary = dateTime.ToFileTime();
-                    byte[] ticksBinaryBytes = BitConverter.GetBytes(ticksValueBinary);
-                    if (encoding == "TicksBinary")
-                    {
-                        Array.Reverse(ticksBinaryBytes);
-                    }
-                    return Convert.ToBase64String(ticksBinaryBytes);
+                    long ticksValueBigEndian = timeSpan.Ticks;
+                    byte[] ticksBinaryBigEndianBytes = BitConverter.GetBytes(ticksValueBigEndian);
+                    Array.Reverse(ticksBinaryBigEndianBytes);
+                    return Convert.ToBase64String(ticksBinaryBigEndianBytes, Base64FormattingOptions.None).ToString();
                 default:
                     throw new ArgumentException($"Unsupported encoding: {encoding}");
             }
         }
+        public string DateTimeEncode(DateTime dateTime)
+        {
+            long ticksValue = dateTime.ToUniversalTime().Ticks; // Converte para UTC e obtém os ticks
+            byte[] ticksBinaryBytes = BitConverter.GetBytes(ticksValue);
+
+            switch (encoding)
+            {
+                case "Iso8601":
+                    string formattedDateTime = dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz");
+                    string offset = TimeZoneInfo.Local.GetUtcOffset(dateTime).ToString(); // Obtém o deslocamento de fuso horário local
+
+                    return formattedDateTime;
+                case "Ticks":
+                    string base64EncodedValue = Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None).Replace(@"""", string.Empty); // Codifica em base64
+                    return base64EncodedValue;
+                case "TicksBinary":
+                    return Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None).Replace(@"""", string.Empty);
+                case "TicksBinaryBigEndian":
+                    long ticksValueBigEndian = dateTime.ToUniversalTime().Ticks;
+                    byte[] ticksBinaryBigEndianBytes = BitConverter.GetBytes(ticksValueBigEndian);
+                    Array.Reverse(ticksBinaryBigEndianBytes);
+                    return Convert.ToBase64String(ticksBinaryBigEndianBytes, Base64FormattingOptions.None).Replace(@"""", string.Empty);
+                default:
+                    throw new ArgumentException($"Unsupported encoding: {encoding}");
+            }
+        }
+
     }
 }

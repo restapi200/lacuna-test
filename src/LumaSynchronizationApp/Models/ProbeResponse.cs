@@ -12,5 +12,13 @@ namespace LumaSynchronizationApp.Models
             this.code = code;
             this.message = message;     
         }
+        public Probe GetProbeById(string id)
+        {
+            return probes.Find(probe => probe.id == id);
+        }
+        public List<Probe> GetProbesByProbeName(string probeName)
+        {
+            return probes.FindAll(probe => probe.name == probeName);
+        }
     }
 }

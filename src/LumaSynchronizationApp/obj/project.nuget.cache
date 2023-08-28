@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "opXKDoH1IBKQtJlYGtXt4qYKcBNVaR+kuKrwxzTiuZgTxIZAlKuCwropb0sMrWdDyBxR3QJKey/xRBFpePzfkA==",
+  "dgSpecHash": "8uIDUbtNpySAPwKvKAPNWsB+maeQSuKrbpVHQmv4wH/n9oShfawlQ5FL2Xp4949GajCN9KQPlFA3tYIaV2jxcA==",
   "success": true,
-  "projectFilePath": "/Users/miguel/estudos-miguel/lacuna/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
+  "projectFilePath": "/Users/miguel/estudos-miguel/lacuna/tests/lacuna-test/src/LumaSynchronizationApp/LumaSynchronizationApp.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }
