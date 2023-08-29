@@ -28,7 +28,6 @@ namespace LumaSynchronizationApp.Services
                 BaseAddress = new Uri(baseAddress)
             };
         }
-
         public async Task<bool> StartApiAsync(string username, string email)
         {
             var requestData = new
@@ -64,7 +63,35 @@ namespace LumaSynchronizationApp.Services
 
             return false;
         }
+        public async Task<BaseResponse>  ProcessJobDetailsAsync(Job job, LumaApiService _apiService)
+        {
+            Console.WriteLine($"id: {job.id}");
+            Console.WriteLine($"Name: {job.probeName}");
 
+            var tprobe = _apiService.probeResponse.GetProbesByProbeName(job.probeName);
+            var stimetripvalue = _apiService.ListSync.GetByProbeName(job.probeName);
+
+            Console.WriteLine($"ID: {tprobe.id}");
+            Console.WriteLine($"Name: {tprobe.name}");
+            Console.WriteLine($"Encoding: {tprobe.encoding}");
+            Console.WriteLine($"name: {stimetripvalue.probeName}");
+
+            var stimetripvalueAtIndex = stimetripvalue.tripTimeOffser.TotalNanoseconds;
+            Console.WriteLine($"stimetripvalueAtIndex: {stimetripvalueAtIndex}");
+            DateTime now = DateTime.UtcNow + stimetripvalue.timeOffser;
+            int tripTimeOffsetMilliseconds = (int)stimetripvalueAtIndex;
+            object timetripvalue = tprobe.DateTimeEncode(now);
+
+            Console.WriteLine($"valor enviado :'{timetripvalue}'");
+            Console.WriteLine($"valor 1 recebido :'{stimetripvalue.encodet2}'");
+            Console.WriteLine($"valor 2 recebido :'{stimetripvalue.encodet1}'");
+
+            var probrepost = await _apiService.PerformJobCheckAsync(job.id, timetripvalue, tripTimeOffsetMilliseconds);
+
+            Console.WriteLine($" apiService.PerformJobCheckAsync({job.id}, {timetripvalue}, {tripTimeOffsetMilliseconds})");
+            return  probrepost;
+
+        }
         public async Task<ProbeResponse> ListProbesAsync()
         {
             SetAuthorizationHeader();
@@ -74,6 +101,7 @@ namespace LumaSynchronizationApp.Services
             if (response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseBody);
                 var responseObject = JsonSerializer.Deserialize<ProbeResponse>(responseBody);
                 if (responseObject.code == "Success"){
                     this.probeResponse = responseObject;
@@ -105,18 +133,22 @@ namespace LumaSynchronizationApp.Services
                     DateTimeOffset clientAfterResponse = probe.Decode(syncApiResponse.t2);
 
                     
-                    TimeSpan offset = CalculateTimeOffset(clientBeforeRequest, serverAfterRequest, serverBeforeResponse, clientAfterResponse);
-                    TimeSpan roundTripDelay = CalculateRoundTripDelay(clientBeforeRequest, serverAfterRequest, serverBeforeResponse, clientAfterResponse);
+                    TimeSpan roundTripDelay = CalculateRoundTripDelay(clientBeforeRequest, serverBeforeResponse, clientAfterResponse, serverAfterRequest);
+                    TimeSpan offset = CalculateTimeOffset(clientBeforeRequest, serverBeforeResponse, clientAfterResponse, serverAfterRequest)+roundTripDelay;
                     //Console.WriteLine($"t1: {clientBeforeRequest}");
                     //Console.WriteLine($"t0: {serverAfterRequest}");
-                    Console.WriteLine($"encode t2: {syncApiResponse.t1}");
-                    Console.WriteLine($"encode t3: {syncApiResponse.t2}");
-                    Console.WriteLine($"t2: {serverBeforeResponse}");
-                    Console.WriteLine($"t3: {clientAfterResponse}");
+                    TimeSpan timeDifference = serverAfterRequest - clientBeforeRequest;
+                    TimeSpan timeServerDiference = clientAfterResponse-serverBeforeResponse;
+                    Console.WriteLine($"t1: {serverBeforeResponse}ms");
+                    Console.WriteLine($"t2: {clientAfterResponse}ms");
+                    Console.WriteLine($"t0: {clientBeforeRequest}ms");
+                    Console.WriteLine($"t3: {serverAfterRequest}ms");
+                    Console.WriteLine($"timeDifference: {timeDifference.TotalMilliseconds}ms");       
+                    Console.WriteLine($"timeServerDiference: {timeServerDiference.TotalMilliseconds}ms");       
                     Console.WriteLine($"id: {probe.id}");
                     Console.WriteLine($"encode at: {probe.encoding}");
-                    //Console.WriteLine($"_offset_after: {_offset}");
-                    //Console.WriteLine($"RoundTripDelay: {roundTripDelay}"); 
+                    Console.WriteLine($"offset: {offset.TotalMilliseconds}ms");
+                    Console.WriteLine($"RoundTripDelay: {roundTripDelay.TotalMilliseconds}ms"); 
 
                     // Add the calculated offset to the previous offset
                     _offset += offset;
@@ -134,11 +166,12 @@ namespace LumaSynchronizationApp.Services
                         probe.name
 
 );
-                    Console.WriteLine($"_offset_before: {_offset}");
+                    Console.WriteLine($"offset_before: {_offset}");
+                    Console.WriteLine($"____________________________________"); 
 
                     ListSync.ProbeSyncList.Add(probeSync);
 
-                    if (Math.Abs(_offset.TotalMilliseconds) < 5) // Check if offset is less than 5ms
+                    if (Math.Abs(roundTripDelay.TotalMilliseconds) < 5) // Check if offset is less than 5ms
                     {
                         _isClockSynchronized = true;
                         return syncApiResponse;
@@ -167,7 +200,7 @@ namespace LumaSynchronizationApp.Services
             
             return null;
         }
-        public async Task<BaseResponse> PerformJobCheckAsync(string jobId, string probeNow, int roundTrip)
+        public async Task<BaseResponse> PerformJobCheckAsync(string jobId, object probeNow, int roundTrip)
         {
 
             
@@ -177,7 +210,7 @@ namespace LumaSynchronizationApp.Services
             var content = new StringContent(checkRequestJson, Encoding.UTF8, "application/json");
             
             SetAuthorizationHeader();
-
+            Console.WriteLine($"contexto enviado {checkRequestJson}");
             var checkResponse = await _httpClient.PostAsync($"/api/job/{jobId}/check", content);
             //Console.WriteLine($"Request URI: {checkResponse.RequestMessage.RequestUri}");
             //Console.WriteLine($"Request Method: {checkResponse.RequestMessage.Method}");
@@ -190,6 +223,7 @@ namespace LumaSynchronizationApp.Services
         if (checkResponse.IsSuccessStatusCode)
         {
             var responseBody = await checkResponse.Content.ReadAsStringAsync();
+            Console.WriteLine(responseBody);
             var checkApiResponse = JsonSerializer.Deserialize<BaseResponse>(responseBody);
             return checkApiResponse;
         }
@@ -203,13 +237,13 @@ namespace LumaSynchronizationApp.Services
         }
         public TimeSpan CalculateTimeOffset(DateTimeOffset clientBeforeRequest, DateTimeOffset serverAfterRequest, DateTimeOffset serverBeforeResponse, DateTimeOffset clientAfterResponse)
         {
-            TimeSpan offset = ((serverAfterRequest - clientBeforeRequest) + (serverBeforeResponse - clientAfterResponse)) / TimeSpan.TicksPerMillisecond / 2;
+            TimeSpan offset = ((serverAfterRequest - clientBeforeRequest) + (serverBeforeResponse - clientAfterResponse)) / 2 ;
             return offset;
         }
 
         public TimeSpan CalculateRoundTripDelay(DateTimeOffset clientBeforeRequest, DateTimeOffset serverAfterRequest, DateTimeOffset serverBeforeResponse, DateTimeOffset clientAfterResponse)
         {
-            TimeSpan roundTripDelay = ((clientAfterResponse - clientBeforeRequest) - (serverBeforeResponse - serverAfterRequest)) / TimeSpan.TicksPerMillisecond;
+            TimeSpan roundTripDelay = ((clientAfterResponse - clientBeforeRequest) - (serverBeforeResponse - serverAfterRequest)) ;
             return roundTripDelay;
         }
 

@@ -16,9 +16,9 @@ namespace LumaSynchronizationApp.Models
         {
             return probes.Find(probe => probe.id == id);
         }
-        public List<Probe> GetProbesByProbeName(string probeName)
+        public Probe GetProbesByProbeName(string probeName)
         {
-            return probes.FindAll(probe => probe.name == probeName);
+            return probes.Find(probe => probe.name == probeName);
         }
     }
 }

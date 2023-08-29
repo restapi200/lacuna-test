@@ -28,10 +28,10 @@ namespace LumaSynchronizationApp.Models{
 
     public class JobCheckRequest
     {
-        public string probeNow { get; set; }
+        public object probeNow { get; set; }
         public int roundTrip { get; set; }
 
-        public JobCheckRequest(string probeNow, int roundTrip)
+        public JobCheckRequest(object probeNow, int roundTrip)
         {
             this.probeNow = probeNow;
             this.roundTrip = roundTrip;

@@ -82,8 +82,7 @@ namespace LumaSynchronizationApp.Models
 
                     return formattedDateTime;
                 case "Ticks":
-                    string base64EncodedValue = Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None).Replace(@"""", string.Empty); // Codifica em base64
-                    return base64EncodedValue;
+                    return ticksValue.ToString();
                 case "TicksBinary":
                     return Convert.ToBase64String(ticksBinaryBytes, Base64FormattingOptions.None).Replace(@"""", string.Empty);
                 case "TicksBinaryBigEndian":

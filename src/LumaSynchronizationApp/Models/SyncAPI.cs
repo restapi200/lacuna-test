@@ -55,9 +55,9 @@ namespace LumaSynchronizationApp.Models
         {
             return ProbeSyncList.FirstOrDefault(probe => probe.probeId == probeId);
         }
-        public List<ProbeSync> GetByProbeName(string probeName)
+        public ProbeSync GetByProbeName(string probeName)
         {
-            return ProbeSyncList.Where(probe => probe.probeName == probeName).ToList();
+            return ProbeSyncList.FirstOrDefault(probe => probe.probeName == probeName);
         }
     }
 
