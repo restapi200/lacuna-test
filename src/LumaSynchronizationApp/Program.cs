@@ -45,6 +45,7 @@ namespace LumaSynchronizationApp
                 jobresponse = await apiService.JobsTake();
                 jobrespons = await apiService.ProcessJobDetailsAsync(jobresponse.job, apiService);
             }
+            await apiService.Done();
             if (jobresponse != null){
                 Console.WriteLine($"code: {jobresponse.code}");
                 Console.WriteLine($"message: {jobresponse.message}");

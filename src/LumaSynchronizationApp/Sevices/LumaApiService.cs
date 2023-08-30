@@ -182,6 +182,23 @@ namespace LumaSynchronizationApp.Services
             return null;
         }
 
+        public async Task Done()
+        {
+                string jsonContent = "{}"; // Substitua pelo JSON desejado
+                HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                string url = "/api/start/2"; // Substitua pelo URL correto
+                var response = await _httpClient.PostAsync(url,content);
+                var name = response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Solicitação POST bem-sucedida!{name}");
+                }
+                else
+                {
+                    Console.WriteLine($"Falha na solicitação POST. Status code: {response.StatusCode}");
+                }
+        }
         public async Task<JobsResponse> JobsTake()
         {
             var response = await _httpClient.PostAsync("/api/job/take", null);
